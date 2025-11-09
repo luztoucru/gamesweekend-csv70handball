@@ -343,9 +343,9 @@ async function downloadPNG() {
     const container = document.getElementById('weekend-admin-view');
     if (!container) return;
 
-    // 1️⃣ Masquer les boutons d’édition
+    // 1️⃣ Masquer temporairement les boutons d’édition et suppression
     const buttons = container.querySelectorAll('.btn-edit, .btn-delete');
-    buttons.forEach(btn => btn.style.display = 'none');
+    buttons.forEach(btn => (btn.style.display = 'none'));
 
     // 2️⃣ Trier les matchs
     const sortByDateTime = (a, b) => {
@@ -356,7 +356,7 @@ async function downloadPNG() {
     const homeMatches = state.matches.filter(m => m.isHome).sort(sortByDateTime);
     const awayMatches = state.matches.filter(m => !m.isHome).sort(sortByDateTime);
 
-    // 3️⃣ Dates du weekend
+    // 3️⃣ Préparer les infos du weekend
     const s = new Date(state.weekendDates.saturday);
     const d = new Date(state.weekendDates.sunday);
     const weekendLabel = `${s.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} – ${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`;
@@ -365,7 +365,7 @@ async function downloadPNG() {
     const wrapper = document.createElement('div');
     wrapper.style.background = '#0c1e3d';
     wrapper.style.color = 'white';
-    wrapper.style.fontFamily = 'Segoe UI, sans-serif';
+    wrapper.style.fontFamily = 'Segoe UI, Roboto, sans-serif';
     wrapper.style.padding = '40px';
     wrapper.style.width = '1600px';
     wrapper.style.minHeight = '900px';
@@ -379,42 +379,49 @@ async function downloadPNG() {
     wrapper.style.justifyContent = 'flex-start';
     wrapper.style.position = 'relative';
 
-    //En-tête avec logo + texte
+    // 5️⃣ En-tête identique à la page d’accueil
     const header = document.createElement('div');
     header.style.display = 'flex';
     header.style.alignItems = 'center';
     header.style.justifyContent = 'center';
     header.style.width = '100%';
-    header.style.marginBottom = '25px';
-    header.style.gap = '15px';
+    header.style.marginBottom = '30px';
+    header.style.gap = '20px';
+    header.style.flexWrap = 'wrap';
 
     const logo = document.createElement('img');
     logo.src = 'assets/logo.png';
     logo.alt = 'Logo CSV70 Handball';
-    logo.style.width = '90px';
-    logo.style.height = '90px';
+    logo.style.width = '85px';
+    logo.style.height = 'auto';
     logo.style.objectFit = 'contain';
-    logo.style.position = 'absolute';
-    logo.style.left = '50px';
-    logo.style.top = '40px';
+    logo.style.borderRadius = '8px';
+    logo.style.boxShadow = '0 0 12px rgba(250,204,21,0.4)';
 
     const titleBlock = document.createElement('div');
+    titleBlock.style.display = 'flex';
+    titleBlock.style.flexDirection = 'column';
+    titleBlock.style.alignItems = 'center';
+    titleBlock.style.textAlign = 'center';
+
     const title = document.createElement('h2');
-    title.textContent = 'CSV70 Handball – Planning du week-end';
+    title.textContent = 'CSV70 Handball';
     title.style.color = '#facc15';
-    title.style.fontSize = '36px';
+    title.style.fontSize = '38px';
+    title.style.fontWeight = '700';
     title.style.margin = '0';
+
     const subtitle = document.createElement('p');
-    subtitle.textContent = weekendLabel;
-    subtitle.style.fontSize = '22px';
+    subtitle.textContent = `Planning du week-end ${weekendLabel}`;
     subtitle.style.color = '#cfe0ff';
+    subtitle.style.fontSize = '20px';
     subtitle.style.margin = '5px 0 0 0';
+
     titleBlock.appendChild(title);
     titleBlock.appendChild(subtitle);
-
+    header.appendChild(logo);
     header.appendChild(titleBlock);
     wrapper.appendChild(header);
-    wrapper.appendChild(logo);
 
     // 6️⃣ Titres colonnes
     const labelRow = document.createElement('div');
@@ -436,19 +443,22 @@ async function downloadPNG() {
     labelRow.appendChild(labelAway);
     wrapper.appendChild(labelRow);
 
-    // 7️⃣ Grilles des matchs (2 par ligne)
+    // 7️⃣ Grille principale (2 colonnes)
     const matchesRow = document.createElement('div');
     matchesRow.style.display = 'grid';
     matchesRow.style.gridTemplateColumns = '1fr 1fr';
     matchesRow.style.gap = '40px';
     matchesRow.style.width = '90%';
 
+    // 8️⃣ Fonction de rendu des matchs (2 côte à côte par colonne)
     const createMatchGrid = (matches, color) => {
         const grid = document.createElement('div');
         grid.style.display = 'grid';
         grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
         grid.style.gap = '15px';
         grid.style.width = '100%';
+        grid.style.alignItems = 'start';
+
         if (matches.length === 0) {
             const msg = document.createElement('p');
             msg.textContent = 'Aucun match';
@@ -456,6 +466,7 @@ async function downloadPNG() {
             grid.appendChild(msg);
             return grid;
         }
+
         matches.forEach(m => {
             const card = document.createElement('div');
             card.style.background = 'rgba(255,255,255,0.1)';
@@ -464,15 +475,17 @@ async function downloadPNG() {
             card.style.padding = '12px';
             card.style.textAlign = 'left';
             card.style.fontSize = '15px';
+            card.style.minHeight = '120px';
             card.innerHTML = `
                 <strong>${m.category}</strong><br>
-                📅 ${new Date(m.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} 
+                📅 ${new Date(m.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}<br>
                 🕒 ${m.time}<br>
                 📍 <em>${m.location}</em><br>
                 ⚔️ <span style="opacity:0.9">vs ${m.opponent}</span>
             `;
             grid.appendChild(card);
         });
+
         return grid;
     };
 
@@ -482,25 +495,27 @@ async function downloadPNG() {
     matchesRow.appendChild(colAway);
     wrapper.appendChild(matchesRow);
 
-    // 8️⃣ Capture HD paysage (x3)
+    // 9️⃣ Capture HD
     document.body.appendChild(wrapper);
     const canvas = await html2canvas(wrapper, {
         backgroundColor: '#0c1e3d',
-        scale: 3, // qualité très élevée
+        scale: 3, // Haute résolution
         width: 1600,
         windowWidth: 1600,
         useCORS: true
     });
 
+    // 🔟 Téléchargement
     const link = document.createElement('a');
     link.download = `Planning_Weekend_${s.getDate()}-${d.getDate()}_${s.getMonth()+1}_${s.getFullYear()}.png`;
     link.href = canvas.toDataURL('image/png', 1.0);
     link.click();
 
-    // 9️⃣ Nettoyage
+    // ♻️ Nettoyage
     document.body.removeChild(wrapper);
-    buttons.forEach(btn => btn.style.display = '');
+    buttons.forEach(btn => (btn.style.display = ''));
 }
+
 
 
 
