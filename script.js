@@ -1,5 +1,6 @@
 // Initialisation du client Supabase
-const supabase = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
+const client = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
+
 
 // État de l'application
 let state = {
@@ -19,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadData() {
     try {
         // Charger les matchs
-        const { data: matches, error: matchesError } = await supabase
+        const { data: matches, error: matchesError } = await client
             .from('matches')
             .select('*')
             .order('date', { ascending: true });
@@ -39,7 +40,7 @@ async function loadData() {
         }));
         
         // Charger les dates des weekends
-        const { data: dates, error: datesError } = await supabase
+        const { data: dates, error: datesError } = await client
             .from('weekend_dates')
             .select('*')
             .eq('id', 1)
@@ -74,7 +75,7 @@ async function saveMatch(matchData) {
         
         if (matchData.id) {
             // Mise à jour
-            const { error } = await supabase
+            const { error } = await client
                 .from('matches')
                 .update(dbMatch)
                 .eq('id', matchData.id);
@@ -82,7 +83,7 @@ async function saveMatch(matchData) {
             if (error) throw error;
         } else {
             // Insertion
-            const { error } = await supabase
+            const { error } = await client
                 .from('matches')
                 .insert([dbMatch]);
             
@@ -101,7 +102,7 @@ async function saveMatch(matchData) {
 // Suppression d'un match
 async function deleteMatch(id) {
     try {
-        const { error } = await supabase
+        const { error } = await client
             .from('matches')
             .delete()
             .eq('id', id);
@@ -120,7 +121,7 @@ async function deleteMatch(id) {
 // Sauvegarde des dates des weekends
 async function saveWeekendDates(dates) {
     try {
-        const { error } = await supabase
+        const { error } = await client
             .from('weekend_dates')
             .update({
                 weekend1: dates.weekend1 || null,
