@@ -340,22 +340,84 @@ function handleLogout() {
 // EXPORTS PNG & XLSX
 
 async function downloadPNG() {
-    const element = document.getElementById('weekend-admin-view');
-    if (!element) return;
-    const canvas = await html2canvas(element, { backgroundColor: '#0c1e3d', scale: 2 });
+    const container = document.getElementById('weekend-admin-view');
+    if (!container) return;
+
+    // On prépare un titre avec les dates du week-end
+    const s = new Date(state.weekendDates.saturday);
+    const d = new Date(state.weekendDates.sunday);
+    const weekendLabel = `${s.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} – ${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+
+    // Création d’un wrapper temporaire pour ajouter un en-tête
+    const wrapper = document.createElement('div');
+    wrapper.style.background = '#0c1e3d';
+    wrapper.style.color = 'white';
+    wrapper.style.padding = '20px';
+    wrapper.style.fontFamily = 'Segoe UI, sans-serif';
+    wrapper.style.textAlign = 'center';
+    wrapper.style.borderRadius = '10px';
+
+    const title = document.createElement('h2');
+    title.textContent = `CSV70 Handball – Planning du week-end`;
+    title.style.color = '#facc15';
+    title.style.marginBottom = '5px';
+    wrapper.appendChild(title);
+
+    const subtitle = document.createElement('p');
+    subtitle.textContent = weekendLabel;
+    subtitle.style.marginBottom = '20px';
+    wrapper.appendChild(subtitle);
+
+    // On clone le planning pour le mettre sous le titre
+    const clone = container.cloneNode(true);
+    clone.style.margin = '0 auto';
+    clone.style.width = '90%';
+    wrapper.appendChild(clone);
+
+    document.body.appendChild(wrapper);
+
+    // Capture du rendu avec html2canvas
+    const canvas = await html2canvas(wrapper, { backgroundColor: '#0c1e3d', scale: 2 });
     const link = document.createElement('a');
-    link.download = 'Planning_Weekend.png';
+    link.download = `Planning_Weekend_${s.getDate()}-${d.getDate()}_${s.getMonth()+1}_${s.getFullYear()}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
+
+    // Nettoyage
+    document.body.removeChild(wrapper);
 }
 
+
 function downloadXLS() {
-    const data = [['Catégorie', 'Date', 'Heure', 'Adversaire', 'Lieu', 'Type']];
+    const s = new Date(state.weekendDates.saturday);
+    const d = new Date(state.weekendDates.sunday);
+    const weekendLabel = `${s.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} – ${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+
+    // Données avec titre du weekend
+    const rows = [
+        [`CSV70 Handball - Planning du week-end ${weekendLabel}`],
+        [],
+        ['Catégorie', 'Date', 'Heure', 'Adversaire', 'Lieu', 'Type']
+    ];
+
+    // Ajout des matchs
     state.matches.forEach(m => {
-        data.push([m.category, m.date, m.time, m.opponent, m.location, m.isHome ? 'Domicile' : 'Extérieur']);
+        rows.push([
+            m.category,
+            new Date(m.date).toLocaleDateString('fr-FR'),
+            m.time,
+            m.opponent,
+            m.location,
+            m.isHome ? 'Domicile' : 'Extérieur'
+        ]);
     });
-    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    // Création du fichier Excel
+    const ws = XLSX.utils.aoa_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Planning');
-    XLSX.writeFile(wb, 'Planning_Weekend.xlsx');
+
+    const filename = `Planning_Weekend_${s.getDate()}-${d.getDate()}_${s.getMonth()+1}_${s.getFullYear()}.xlsx`;
+    XLSX.writeFile(wb, filename);
 }
+
