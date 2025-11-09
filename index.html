@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV70 Handball - Calendrier des Matchs</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Chargement...</p>
+        </div>
+    </div>
+    
+    <!-- Template pour la vue publique -->
+    <template id="public-view">
+        <div class="public-container">
+            <header class="header">
+                <div class="header-content">
+                    <h1 class="main-title">CSV70 HANDBALL</h1>
+                    <p class="subtitle">Calendrier des matchs</p>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <div class="weekends-grid">
+                    <!-- Weekend 1 -->
+                    <div class="weekend-card">
+                        <div class="weekend-header">
+                            <h2 class="weekend-title" id="weekend1-title">Weekend 1</h2>
+                        </div>
+                        <div class="matches-container" id="weekend1-matches">
+                            <p class="no-matches">Aucun match programmé</p>
+                        </div>
+                    </div>
+
+                    <!-- Weekend 2 -->
+                    <div class="weekend-card">
+                        <div class="weekend-header">
+                            <h2 class="weekend-title" id="weekend2-title">Weekend 2</h2>
+                        </div>
+                        <div class="matches-container" id="weekend2-matches">
+                            <p class="no-matches">Aucun match programmé</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-access">
+                    <button id="admin-btn" class="admin-button">
+                        🔒 Accès administrateur
+                    </button>
+                </div>
+            </main>
+        </div>
+    </template>
+
+    <!-- Template pour la vue admin -->
+    <template id="admin-view">
+        <div class="admin-container">
+            <header class="admin-header">
+                <div class="admin-header-content">
+                    <div>
+                        <h1 class="admin-title">CSV70 Handball</h1>
+                        <p class="admin-subtitle">Administration - Gestion des matchs</p>
+                    </div>
+                    <button id="logout-btn" class="logout-button">
+                        ← Déconnexion
+                    </button>
+                </div>
+            </header>
+
+            <main class="admin-main">
+                <div class="admin-actions">
+                    <button id="add-match-btn" class="btn-primary">
+                        ➕ Ajouter un match
+                    </button>
+                    <button id="config-dates-btn" class="btn-secondary">
+                        ⚙️ Configurer les dates
+                    </button>
+                </div>
+
+                <!-- Formulaire de configuration des dates -->
+                <div id="dates-form" class="form-card hidden">
+                    <h2 class="form-title">Configuration des weekends</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Weekend 1 - Date de début</label>
+                            <input type="date" id="date-weekend1" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Weekend 2 - Date de début</label>
+                            <input type="date" id="date-weekend2" class="form-input">
+                        </div>
+                    </div>
+                    <button id="save-dates-btn" class="btn-submit">Enregistrer les dates</button>
+                </div>
+
+                <!-- Formulaire d'ajout/modification de match -->
+                <div id="match-form" class="form-card hidden">
+                    <h2 class="form-title" id="form-title">Nouveau match</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Weekend</label>
+                            <select id="match-weekend" class="form-input">
+                                <option value="1">Weekend 1</option>
+                                <option value="2">Weekend 2</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Catégorie</label>
+                            <input type="text" id="match-category" class="form-input" placeholder="Ex: Seniors M, -18F...">
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="match-date" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Heure</label>
+                            <input type="time" id="match-time" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Adversaire</label>
+                            <input type="text" id="match-opponent" class="form-input" placeholder="Nom du club adverse">
+                        </div>
+                        <div class="form-group">
+                            <label>Lieu</label>
+                            <input type="text" id="match-location" class="form-input" placeholder="Ville ou gymnase">
+                        </div>
+                        <div class="form-group">
+                            <label>Type de match</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="match-type" value="home" checked>
+                                    <span>Domicile</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="match-type" value="away">
+                                    <span>Extérieur</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button id="submit-match-btn" class="btn-submit">Ajouter</button>
+                        <button id="cancel-match-btn" class="btn-cancel hidden">Annuler</button>
+                    </div>
+                </div>
+
+                <!-- Liste des matchs -->
+                <div class="admin-weekends-grid">
+                    <div class="admin-weekend-card">
+                        <div class="admin-weekend-header">
+                            <h2 id="admin-weekend1-title">Weekend 1</h2>
+                        </div>
+                        <div id="admin-weekend1-matches" class="admin-matches-list"></div>
+                    </div>
+                    <div class="admin-weekend-card">
+                        <div class="admin-weekend-header">
+                            <h2 id="admin-weekend2-title">Weekend 2</h2>
+                        </div>
+                        <div id="admin-weekend2-matches" class="admin-matches-list"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </template>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Configuration Supabase -->
+    <script src="config.js"></script>
+    
+    <!-- Script principal -->
+    <script src="script.js"></script>
+</body>
+</html>
