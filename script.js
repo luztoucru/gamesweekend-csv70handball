@@ -343,49 +343,165 @@ async function downloadPNG() {
     const container = document.getElementById('weekend-admin-view');
     if (!container) return;
 
-    // On prépare un titre avec les dates du week-end
+    // 1️⃣ Masquer les boutons d’édition
+    const buttons = container.querySelectorAll('.btn-edit, .btn-delete');
+    buttons.forEach(btn => btn.style.display = 'none');
+
+    // 2️⃣ Trier les matchs
+    const sortByDateTime = (a, b) => {
+        const da = new Date(`${a.date}T${a.time}`);
+        const db = new Date(`${b.date}T${b.time}`);
+        return da - db;
+    };
+    const homeMatches = state.matches.filter(m => m.isHome).sort(sortByDateTime);
+    const awayMatches = state.matches.filter(m => !m.isHome).sort(sortByDateTime);
+
+    // 3️⃣ Dates du weekend
     const s = new Date(state.weekendDates.saturday);
     const d = new Date(state.weekendDates.sunday);
     const weekendLabel = `${s.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} – ${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`;
 
-    // Création d’un wrapper temporaire pour ajouter un en-tête
+    // 4️⃣ Wrapper principal
     const wrapper = document.createElement('div');
     wrapper.style.background = '#0c1e3d';
     wrapper.style.color = 'white';
-    wrapper.style.padding = '20px';
     wrapper.style.fontFamily = 'Segoe UI, sans-serif';
+    wrapper.style.padding = '40px';
+    wrapper.style.width = '1600px';
+    wrapper.style.minHeight = '900px';
+    wrapper.style.borderRadius = '15px';
+    wrapper.style.margin = '0 auto';
     wrapper.style.textAlign = 'center';
-    wrapper.style.borderRadius = '10px';
+    wrapper.style.boxSizing = 'border-box';
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.alignItems = 'center';
+    wrapper.style.justifyContent = 'flex-start';
+    wrapper.style.position = 'relative';
 
+    //En-tête avec logo + texte
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.alignItems = 'center';
+    header.style.justifyContent = 'center';
+    header.style.width = '100%';
+    header.style.marginBottom = '25px';
+    header.style.gap = '15px';
+
+    const logo = document.createElement('img');
+    logo.src = 'assets/logo.png';
+    logo.alt = 'Logo CSV70 Handball';
+    logo.style.width = '90px';
+    logo.style.height = '90px';
+    logo.style.objectFit = 'contain';
+    logo.style.position = 'absolute';
+    logo.style.left = '50px';
+    logo.style.top = '40px';
+
+    const titleBlock = document.createElement('div');
     const title = document.createElement('h2');
-    title.textContent = `CSV70 Handball – Planning du week-end`;
+    title.textContent = 'CSV70 Handball – Planning du week-end';
     title.style.color = '#facc15';
-    title.style.marginBottom = '5px';
-    wrapper.appendChild(title);
-
+    title.style.fontSize = '36px';
+    title.style.margin = '0';
     const subtitle = document.createElement('p');
     subtitle.textContent = weekendLabel;
-    subtitle.style.marginBottom = '20px';
-    wrapper.appendChild(subtitle);
+    subtitle.style.fontSize = '22px';
+    subtitle.style.color = '#cfe0ff';
+    subtitle.style.margin = '5px 0 0 0';
+    titleBlock.appendChild(title);
+    titleBlock.appendChild(subtitle);
 
-    // On clone le planning pour le mettre sous le titre
-    const clone = container.cloneNode(true);
-    clone.style.margin = '0 auto';
-    clone.style.width = '90%';
-    wrapper.appendChild(clone);
+    header.appendChild(titleBlock);
+    wrapper.appendChild(header);
+    wrapper.appendChild(logo);
 
+    // 6️⃣ Titres colonnes
+    const labelRow = document.createElement('div');
+    labelRow.style.display = 'flex';
+    labelRow.style.width = '90%';
+    labelRow.style.justifyContent = 'space-between';
+    labelRow.style.marginBottom = '10px';
+
+    const labelHome = document.createElement('h3');
+    labelHome.textContent = '🏠 Domicile';
+    labelHome.style.color = '#facc15';
+    labelHome.style.margin = '0';
+    const labelAway = document.createElement('h3');
+    labelAway.textContent = '🚌 Extérieur';
+    labelAway.style.color = '#1e90ff';
+    labelAway.style.margin = '0';
+
+    labelRow.appendChild(labelHome);
+    labelRow.appendChild(labelAway);
+    wrapper.appendChild(labelRow);
+
+    // 7️⃣ Grilles des matchs (2 par ligne)
+    const matchesRow = document.createElement('div');
+    matchesRow.style.display = 'grid';
+    matchesRow.style.gridTemplateColumns = '1fr 1fr';
+    matchesRow.style.gap = '40px';
+    matchesRow.style.width = '90%';
+
+    const createMatchGrid = (matches, color) => {
+        const grid = document.createElement('div');
+        grid.style.display = 'grid';
+        grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        grid.style.gap = '15px';
+        grid.style.width = '100%';
+        if (matches.length === 0) {
+            const msg = document.createElement('p');
+            msg.textContent = 'Aucun match';
+            msg.style.color = '#cfe0ff';
+            grid.appendChild(msg);
+            return grid;
+        }
+        matches.forEach(m => {
+            const card = document.createElement('div');
+            card.style.background = 'rgba(255,255,255,0.1)';
+            card.style.borderLeft = `5px solid ${color}`;
+            card.style.borderRadius = '8px';
+            card.style.padding = '12px';
+            card.style.textAlign = 'left';
+            card.style.fontSize = '15px';
+            card.innerHTML = `
+                <strong>${m.category}</strong><br>
+                📅 ${new Date(m.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} 
+                🕒 ${m.time}<br>
+                📍 <em>${m.location}</em><br>
+                ⚔️ <span style="opacity:0.9">vs ${m.opponent}</span>
+            `;
+            grid.appendChild(card);
+        });
+        return grid;
+    };
+
+    const colHome = createMatchGrid(homeMatches, '#facc15');
+    const colAway = createMatchGrid(awayMatches, '#1e90ff');
+    matchesRow.appendChild(colHome);
+    matchesRow.appendChild(colAway);
+    wrapper.appendChild(matchesRow);
+
+    // 8️⃣ Capture HD paysage (x3)
     document.body.appendChild(wrapper);
+    const canvas = await html2canvas(wrapper, {
+        backgroundColor: '#0c1e3d',
+        scale: 3, // qualité très élevée
+        width: 1600,
+        windowWidth: 1600,
+        useCORS: true
+    });
 
-    // Capture du rendu avec html2canvas
-    const canvas = await html2canvas(wrapper, { backgroundColor: '#0c1e3d', scale: 2 });
     const link = document.createElement('a');
     link.download = `Planning_Weekend_${s.getDate()}-${d.getDate()}_${s.getMonth()+1}_${s.getFullYear()}.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.href = canvas.toDataURL('image/png', 1.0);
     link.click();
 
-    // Nettoyage
+    // 9️⃣ Nettoyage
     document.body.removeChild(wrapper);
+    buttons.forEach(btn => btn.style.display = '');
 }
+
 
 
 function downloadXLS() {

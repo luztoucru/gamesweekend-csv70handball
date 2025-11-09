@@ -1,16 +1,15 @@
 /* ================================
-   🎨 PALETTE CSV70 HANDBALL
+   🎨 COULEURS CLUB CSV70
    ================================ */
 :root {
     --bleu-fonce: #0c1e3d;
     --bleu-clair: #1e90ff;
     --jaune: #facc15;
     --blanc: #ffffff;
-    --gris-clair: #f4f5f7;
 }
 
 /* ================================
-   ⚙️ RESET DE BASE
+   ⚙️ RESET GÉNÉRAL
    ================================ */
 * {
     margin: 0;
@@ -20,56 +19,43 @@
 
 body {
     font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-    background: linear-gradient(160deg, var(--bleu-fonce) 0%, #1b2f63 50%, var(--bleu-clair) 100%);
     color: var(--blanc);
+    background: linear-gradient(160deg, var(--bleu-fonce) 0%, #1b2f63 40%, var(--bleu-clair) 100%);
     min-height: 100vh;
-    line-height: 1.6;
+    overflow-x: hidden;
 }
 
 /* ================================
-   🏠 EN-TÊTE AVEC LOGO
+   🏠 HEADER
    ================================ */
 .header {
     display: flex;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     border-bottom: 3px solid var(--jaune);
-    padding: 1rem 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(8px);
+    padding: 1rem;
+    width: 100%;
 }
 
 .header-content {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 1.2rem;
-    text-align: left;
+    gap: 1rem;
     flex-wrap: wrap;
+    text-align: left;
 }
 
-/* 🖼️ Gestion du logo */
 .club-logo {
-    height: 85px;
-    width: auto;
-    max-width: 120px;
+    width: clamp(60px, 8vw, 100px);
+    height: auto;
     object-fit: contain;
-    border-radius: 6px;
-    flex-shrink: 0;
-}
-
-@media (max-width: 768px) {
-    .club-logo {
-        height: 65px;
-        max-width: 90px;
-    }
+    border-radius: 8px;
 }
 
 .main-title {
-    font-size: clamp(1.5rem, 3vw, 2.3rem);
+    font-size: clamp(1.6rem, 4vw, 2.3rem);
     font-weight: 700;
     color: var(--jaune);
-    letter-spacing: 0.5px;
 }
 
 .subtitle {
@@ -78,21 +64,18 @@ body {
 }
 
 /* ================================
-   📦 CONTAINERS PRINCIPAUX
+   🧱 CONTENEUR PRINCIPAL
    ================================ */
 .public-container,
 .admin-container {
-    max-width: 1100px;
-    margin: 2rem auto;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 1rem;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
     padding: 2rem;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* ================================
-   🗓️ TITRES DU WEEKEND
+   📅 TITRES DU WEEKEND
    ================================ */
 .weekend-header {
     text-align: center;
@@ -106,43 +89,33 @@ body {
 }
 
 #weekend-dates {
-    color: #dce3ff;
+    color: #d0d9ff;
     font-size: 1rem;
 }
 
 /* ================================
-   🏠 / 🚌 COLONNES MATCHS
+   🏠 / 🚌 GRILLE DOMICILE / EXTÉRIEUR
    ================================ */
 .weekend-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 2rem;
-}
-
-@media (max-width: 900px) {
-    .weekend-grid {
-        grid-template-columns: 1fr;
-    }
+    width: 100%;
 }
 
 .weekend-column {
-    border-radius: 0.75rem;
-    padding: 1rem;
     background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-    transition: 0.3s ease;
-}
-
-.weekend-column:hover {
-    background: rgba(255, 255, 255, 0.12);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .home-column {
-    border-left: 6px solid var(--jaune);
+    border-top: 5px solid var(--jaune);
 }
 
 .away-column {
-    border-left: 6px solid var(--bleu-clair);
+    border-top: 5px solid var(--bleu-clair);
 }
 
 .column-title {
@@ -150,23 +123,41 @@ body {
     font-size: 1.3rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    color: var(--blanc);
 }
 
 /* ================================
-   🎯 CARTES DE MATCH
+   🧾 CARTES DE MATCH
    ================================ */
+.matches-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+/* 👉 À partir des tablettes (≥ 768px), on affiche 2 matchs côte à côte */
+@media (min-width: 768px) {
+    .matches-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 .match-card {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 0.5rem;
-    padding: 0.9rem 1rem;
-    margin-bottom: 1rem;
-    transition: 0.3s ease;
+    padding: 0.8rem 1rem;
+    transition: transform 0.3s ease, background 0.3s ease;
 }
 
 .match-card:hover {
+    transform: scale(1.02);
     background: rgba(255, 255, 255, 0.18);
-    transform: translateY(-2px);
+}
+
+.match-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.9rem;
 }
 
 .match-badge {
@@ -176,7 +167,6 @@ body {
     padding: 0.3rem 0.6rem;
     border-radius: 0.3rem;
     margin-bottom: 0.4rem;
-    text-transform: uppercase;
 }
 
 .match-badge.home {
@@ -189,31 +179,16 @@ body {
     color: var(--blanc);
 }
 
-.match-info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    font-size: 0.9rem;
-    gap: 0.2rem;
-}
-
-.match-opponent {
-    grid-column: span 2;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    margin-top: 0.5rem;
-    padding-top: 0.4rem;
-    font-weight: 600;
-}
-
 /* ================================
-   ⚙️ ADMIN / FORMULAIRES
+   ⚙️ ADMIN INTERFACE
    ================================ */
 .admin-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.3);
-    border-bottom: 3px solid var(--bleu-clair);
+    background: rgba(255, 255, 255, 0.05);
     padding: 1rem 2rem;
+    flex-wrap: wrap;
 }
 
 .logout-button {
@@ -234,24 +209,23 @@ body {
 .admin-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
     justify-content: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
 }
 
-/* Boutons */
-button,
 .btn-primary,
 .btn-secondary,
 .btn-download,
 .btn-submit,
 .btn-cancel {
     border: none;
-    padding: 0.7rem 1.3rem;
+    padding: 0.6rem 1.2rem;
     border-radius: 0.5rem;
     font-weight: 600;
     cursor: pointer;
     transition: 0.3s ease;
+    font-size: 0.95rem;
 }
 
 .btn-primary {
@@ -267,6 +241,7 @@ button,
     background: var(--jaune);
     color: var(--bleu-fonce);
 }
+
 .btn-download {
     background: white;
     color: var(--bleu-fonce);
@@ -276,116 +251,70 @@ button,
     color: var(--bleu-fonce);
 }
 
-.btn-submit {
-    background: var(--bleu-clair);
-    color: white;
-}
-.btn-submit:hover {
-    background: var(--jaune);
-    color: var(--bleu-fonce);
-}
-
-.btn-cancel {
-    background: #6b7280;
-    color: white;
-}
-.btn-cancel:hover {
-    background: #9ca3af;
-}
-
 /* ================================
-   🧾 FORMULAIRES
+   🧾 FORMULAIRES ADMIN
    ================================ */
 .form-card {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 0.5rem;
-    padding: 1.2rem;
+    padding: 1rem;
     margin-bottom: 1.5rem;
 }
 
 .form-title {
-    text-align: center;
     color: var(--jaune);
-    font-size: 1.3rem;
-    font-weight: 700;
     margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
 }
 
 .form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1rem;
 }
-@media (max-width: 768px) {
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-}
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
 .form-group label {
     font-size: 0.9rem;
     color: #e2e8f0;
     margin-bottom: 0.3rem;
+    display: block;
 }
+
 .form-input,
 select {
+    width: 100%;
     padding: 0.6rem 0.8rem;
     border-radius: 0.4rem;
     border: 1px solid #ccc;
     font-size: 1rem;
-    color: #1f2937;
+    outline: none;
 }
 
 /* ================================
-   🌀 CHARGEMENT
+   📱 RESPONSIVE DESIGN
    ================================ */
-.loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background: var(--bleu-fonce);
-    color: white;
-}
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(255, 255, 255, 0.2);
-    border-top-color: var(--jaune);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-.loading p {
-    margin-top: 1rem;
-    font-size: 1rem;
-}
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
 
-/* ================================
-   🔒 ACCÈS ADMIN
-   ================================ */
-.admin-access {
-    text-align: center;
-    margin-top: 2rem;
-}
-.admin-button {
-    background: var(--bleu-clair);
-    color: white;
-    border: none;
-    padding: 0.8rem 1.4rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.3s ease;
-}
-.admin-button:hover {
-    background: var(--jaune);
-    color: var(--bleu-fonce);
+    .club-logo {
+        width: 80px;
+    }
+
+    .admin-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .weekend-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .matches-container {
+        grid-template-columns: 1fr;
+    }
 }
