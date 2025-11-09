@@ -1,257 +1,45 @@
-/* ================================
-   COULEURS CSV70
-   ================================ */
-:root {
-    --bleu-fonce: #0c1e3d;
-    --bleu-clair: #1e90ff;
-    --jaune: #facc15;
-    --blanc: #ffffff;
-}
-
-/* ================================
-   BASE
-   ================================ */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
     font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-    color: var(--blanc);
-    background: linear-gradient(160deg, var(--bleu-fonce) 0%, #112b5b 50%, var(--bleu-clair) 100%);
+    color: white;
+    background: linear-gradient(160deg, #0c1e3d 0%, #1b2f63 40%, #1e90ff 100%);
     min-height: 100vh;
 }
 
-/* ================================
-   HEADER
-   ================================ */
-.header {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    padding: 1rem 2rem;
-    border-bottom: 3px solid var(--jaune);
-}
-
-.header-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-}
-
-.club-logo {
-    width: 70px;
-    height: 70px;
-    object-fit: contain;
-}
-
-.main-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--jaune);
-}
-
-.subtitle {
-    font-size: 1rem;
-    color: #bfdbfe;
-}
-
-/* ================================
-   CONTENU PRINCIPAL
-   ================================ */
-.public-container, .admin-container {
-    max-width: 1100px;
-    margin: 2rem auto;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 1rem;
-    padding: 2rem;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.weekend-card {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    border-left: 5px solid var(--jaune);
-}
-
-.weekend-title {
-    color: var(--jaune);
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-}
-
-.match-card {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.75rem;
-}
-
-.match-badge {
-    font-weight: 600;
-    padding: 0.2rem 0.6rem;
-    border-radius: 0.25rem;
-    display: inline-block;
-    margin-bottom: 0.5rem;
-}
-
-.match-badge.home {
-    background: var(--bleu-clair);
-    color: var(--blanc);
-}
-
-.match-badge.away {
-    background: var(--jaune);
-    color: var(--bleu-fonce);
-}
-
-.match-info {
+/* Layout weekend */
+.weekend-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    font-size: 0.9rem;
+    gap: 2rem;
+    margin-top: 2rem;
 }
 
-.match-opponent {
-    grid-column: span 2;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    font-weight: bold;
+.weekend-column {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    backdrop-filter: blur(5px);
 }
 
-/* ================================
-   ADMIN
-   ================================ */
-.admin-header {
-    background: rgba(0, 0, 0, 0.2);
-    border-bottom: 3px solid var(--bleu-clair);
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.home-column {
+    border-left: 6px solid #facc15;
 }
 
-.logout-button {
-    background: var(--bleu-clair);
-    color: white;
+.away-column {
+    border-left: 6px solid #1e90ff;
+}
+
+/* Boutons d'export */
+.btn-download {
+    background: white;
+    color: #0c1e3d;
     border: none;
     border-radius: 0.5rem;
     padding: 0.5rem 1rem;
     cursor: pointer;
-    transition: 0.3s ease;
-}
-
-.logout-button:hover {
-    background: var(--jaune);
-    color: var(--bleu-fonce);
-}
-
-.admin-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.btn-primary, .btn-secondary, .btn-download {
-    border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 0.5rem;
     font-weight: 600;
-    cursor: pointer;
     transition: 0.3s ease;
 }
-
-.btn-primary {
-    background: var(--bleu-clair);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: var(--jaune);
-    color: var(--bleu-fonce);
-}
-
-.btn-secondary {
-    background: var(--jaune);
-    color: var(--bleu-fonce);
-}
-
-.btn-download {
-    background: var(--blanc);
-    color: var(--bleu-fonce);
-}
-
 .btn-download:hover {
-    background: var(--jaune);
-}
-
-/* ================================
-   FORMULAIRES & GRILLES
-   ================================ */
-.form-card {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 1rem;
-    border-radius: 0.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.form-title {
-    color: var(--jaune);
-    margin-bottom: 0.75rem;
-    font-weight: 700;
-}
-
-.form-input, select {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    border: 1px solid #ccc;
-}
-
-.admin-weekend-card {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
-    padding: 1rem;
-}
-
-.admin-weekend-header h2 {
-    color: var(--jaune);
-    font-size: 1.2rem;
-}
-
-.no-matches {
-    font-style: italic;
-    opacity: 0.8;
-}
-
-/* ================================
-   CHARGEMENT
-   ================================ */
-.loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-}
-
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-top-color: var(--jaune);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-.loading p {
-    margin-top: 1rem;
-    font-size: 1rem;
+    background: #facc15;
+    color: #0c1e3d;
 }

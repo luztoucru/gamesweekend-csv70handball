@@ -1,29 +1,36 @@
-// Initialisation du client Supabase (corrigé)
+// =====================================
+// INITIALISATION SUPABASE
+// =====================================
 const client = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
 
-// État de l'application
+// =====================================
+// ÉTAT DE L’APPLICATION
+// =====================================
 let state = {
     isAdmin: false,
     matches: [],
-    weekendDates: { weekend1: '', weekend2: '' },
+    weekendDates: { saturday: '', sunday: '' },
     editingMatch: null
 };
 
-// Initialisation
+// =====================================
+// CHARGEMENT INITIAL
+// =====================================
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         await loadData();
         renderView();
-    } catch (err) {
-        console.error("Erreur d'initialisation :", err);
-        alert("Impossible de charger les données. Vérifie ta connexion ou les clés Supabase.");
+    } catch (error) {
+        console.error("Erreur d'initialisation :", error);
+        alert("Impossible de charger les données.");
     }
 });
 
-// Chargement des données depuis Supabase
+// =====================================
+// CHARGEMENT DES DONNÉES
+// =====================================
 async function loadData() {
     try {
-        // Charger les matchs
         const { data: matches, error: matchesError } = await client
             .from('matches')
             .select('*')
@@ -31,10 +38,8 @@ async function loadData() {
 
         if (matchesError) throw matchesError;
 
-        // Convertir is_home en isHome
         state.matches = matches.map(m => ({
             id: m.id,
-            weekend: m.weekend,
             category: m.category,
             date: m.date,
             time: m.time,
@@ -43,7 +48,6 @@ async function loadData() {
             isHome: m.is_home
         }));
 
-        // Charger les dates des weekends
         const { data: dates, error: datesError } = await client
             .from('weekend_dates')
             .select('*')
@@ -53,21 +57,43 @@ async function loadData() {
         if (datesError) throw datesError;
 
         state.weekendDates = {
-            weekend1: dates.weekend1 || '',
-            weekend2: dates.weekend2 || ''
+            saturday: dates.saturday || '',
+            sunday: dates.sunday || ''
         };
-
     } catch (error) {
         console.error('Erreur de chargement :', error);
-        alert('Erreur lors du chargement des données depuis Supabase.');
     }
 }
 
-// Sauvegarde d’un match
+// =====================================
+// SAUVEGARDE DES DATES
+// =====================================
+async function saveWeekendDates(dates) {
+    try {
+        const { error } = await client
+            .from('weekend_dates')
+            .update({
+                saturday: dates.saturday || null,
+                sunday: dates.sunday || null,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', 1);
+
+        if (error) throw error;
+
+        await loadData();
+        renderView();
+    } catch (error) {
+        console.error('Erreur sauvegarde dates :', error);
+    }
+}
+
+// =====================================
+// AJOUT / MODIF / SUPPRESSION MATCH
+// =====================================
 async function saveMatch(matchData) {
     try {
         const dbMatch = {
-            weekend: matchData.weekend,
             category: matchData.category,
             date: matchData.date,
             time: matchData.time,
@@ -83,242 +109,225 @@ async function saveMatch(matchData) {
                 .eq('id', matchData.id);
             if (error) throw error;
         } else {
-            const { error } = await client
-                .from('matches')
-                .insert([dbMatch]);
+            const { error } = await client.from('matches').insert([dbMatch]);
             if (error) throw error;
         }
 
         await loadData();
-        return true;
+        renderView();
     } catch (error) {
-        console.error('Erreur de sauvegarde :', error);
-        alert('Erreur lors de la sauvegarde du match.');
-        return false;
+        console.error('Erreur sauvegarde match :', error);
+        alert("Erreur lors de l'enregistrement du match.");
     }
 }
 
-// Suppression d’un match
 async function deleteMatch(id) {
+    if (!confirm("Supprimer ce match ?")) return;
     try {
-        const { error } = await client
-            .from('matches')
-            .delete()
-            .eq('id', id);
+        const { error } = await client.from('matches').delete().eq('id', id);
         if (error) throw error;
         await loadData();
-        return true;
+        renderView();
     } catch (error) {
-        console.error('Erreur de suppression :', error);
-        alert('Erreur lors de la suppression du match.');
-        return false;
+        console.error('Erreur suppression match :', error);
     }
 }
 
-// Sauvegarde des dates des weekends
-async function saveWeekendDates(dates) {
-    try {
-        const { error } = await client
-            .from('weekend_dates')
-            .update({
-                weekend1: dates.weekend1 || null,
-                weekend2: dates.weekend2 || null,
-                updated_at: new Date().toISOString()
-            })
-            .eq('id', 1);
-
-        if (error) throw error;
-        await loadData();
-        return true;
-    } catch (error) {
-        console.error('Erreur de sauvegarde des dates :', error);
-        alert('Erreur lors de la sauvegarde des dates.');
-        return false;
-    }
-}
-
-// Rendu de la vue principale
+// =====================================
+// AFFICHAGE PRINCIPAL
+// =====================================
 function renderView() {
     const app = document.getElementById('app');
     app.innerHTML = '';
-
-    if (state.isAdmin) {
-        renderAdminView(app);
-    } else {
-        renderPublicView(app);
-    }
+    if (state.isAdmin) renderAdminView(app);
+    else renderPublicView(app);
 }
 
-// Vue publique
+// =====================================
+// VUE PUBLIQUE
+// =====================================
 function renderPublicView(container) {
     const template = document.getElementById('public-view');
     const clone = template.content.cloneNode(true);
 
-    updateWeekendTitle(clone, 'weekend1-title', '1');
-    updateWeekendTitle(clone, 'weekend2-title', '2');
+    // Mise à jour du titre et dates
+    const weekendTitle = clone.getElementById('weekend-title');
+    const weekendDates = clone.getElementById('weekend-dates');
 
-    renderPublicMatches(clone, 'weekend1-matches', '1');
-    renderPublicMatches(clone, 'weekend2-matches', '2');
+    if (state.weekendDates.saturday && state.weekendDates.sunday) {
+        const s = new Date(state.weekendDates.saturday);
+        const d = new Date(state.weekendDates.sunday);
+        weekendDates.textContent = `${s.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} – ${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+    }
+
+    renderPublicMatches(clone);
 
     clone.getElementById('admin-btn').addEventListener('click', handleAdminAccess);
-
-    // Délai pour masquer le spinner après le rendu
-    setTimeout(() => {
-        container.innerHTML = '';
-        container.appendChild(clone);
-    }, 300);
+    container.appendChild(clone);
 }
 
-// Vue admin
+function renderPublicMatches(clone) {
+    const homeContainer = clone.getElementById('home-matches');
+    const awayContainer = clone.getElementById('away-matches');
+
+    const homeMatches = state.matches.filter(m => m.isHome);
+    const awayMatches = state.matches.filter(m => !m.isHome);
+
+    homeContainer.innerHTML = homeMatches.length ? '' : '<p class="no-matches">Aucun match</p>';
+    awayContainer.innerHTML = awayMatches.length ? '' : '<p class="no-matches">Aucun match</p>';
+
+    homeMatches.forEach(m => homeContainer.appendChild(createMatchCard(m)));
+    awayMatches.forEach(m => awayContainer.appendChild(createMatchCard(m)));
+}
+
+function createMatchCard(match) {
+    const card = document.createElement('div');
+    card.className = 'match-card';
+    const date = new Date(match.date);
+    const dateStr = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    card.innerHTML = `
+        <div class="match-badge ${match.isHome ? 'home' : 'away'}">${match.isHome ? 'DOMICILE' : 'EXTÉRIEUR'}</div>
+        <div class="match-info">
+            <div>${match.category}</div>
+            <div>${dateStr}</div>
+            <div>${match.time}</div>
+            <div>${match.location}</div>
+            <div class="match-opponent">vs ${match.opponent}</div>
+        </div>
+    `;
+    return card;
+}
+
+// =====================================
+// VUE ADMIN
+// =====================================
 function renderAdminView(container) {
     const template = document.getElementById('admin-view');
     const clone = template.content.cloneNode(true);
 
+    // Boutons principaux
     clone.getElementById('logout-btn').addEventListener('click', handleLogout);
-    clone.getElementById('add-match-btn').addEventListener('click', () => toggleForm('match-form'));
     clone.getElementById('config-dates-btn').addEventListener('click', () => toggleForm('dates-form'));
-
-    const dateWeekend1 = clone.getElementById('date-weekend1');
-    const dateWeekend2 = clone.getElementById('date-weekend2');
-    dateWeekend1.value = state.weekendDates.weekend1;
-    dateWeekend2.value = state.weekendDates.weekend2;
-
-    clone.getElementById('save-dates-btn').addEventListener('click', async () => {
-        const dates = {
-            weekend1: dateWeekend1.value,
-            weekend2: dateWeekend2.value
-        };
-        const success = await saveWeekendDates(dates);
-        if (success) renderView();
-    });
-
+    clone.getElementById('add-match-btn').addEventListener('click', () => toggleForm('match-form'));
+    clone.getElementById('save-dates-btn').addEventListener('click', saveWeekendFromForm);
     clone.getElementById('submit-match-btn').addEventListener('click', handleSubmitMatch);
-    clone.getElementById('cancel-match-btn').addEventListener('click', handleCancelEdit);
+    clone.getElementById('cancel-match-btn').addEventListener('click', resetMatchForm);
 
-    updateAdminWeekendTitle(clone, 'admin-weekend1-title', '1');
-    updateAdminWeekendTitle(clone, 'admin-weekend2-title', '2');
-
+    // Rendu initial
     container.appendChild(clone);
-
-    setTimeout(() => {
-        renderAdminMatches('admin-weekend1-matches', '1');
-        renderAdminMatches('admin-weekend2-matches', '2');
-    }, 0);
+    setTimeout(() => renderAdminMatches(), 0);
 }
 
-// --------------------------
-// Fonctions utilitaires
-// --------------------------
+// =====================================
+// RENDU MATCHS ADMIN
+// =====================================
+function renderAdminMatches() {
+    const homeContainer = document.getElementById('admin-home-matches');
+    const awayContainer = document.getElementById('admin-away-matches');
 
-function updateWeekendTitle(container, elementId, weekend) {
-    const title = container.getElementById(elementId);
-    const dateStr = weekend === '1' ? state.weekendDates.weekend1 : state.weekendDates.weekend2;
-    if (dateStr) {
-        const formatted = new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-        title.textContent = `Weekend du ${formatted}`;
-    } else {
-        title.textContent = `Weekend ${weekend}`;
-    }
-}
+    homeContainer.innerHTML = '';
+    awayContainer.innerHTML = '';
 
-function updateAdminWeekendTitle(container, elementId, weekend) {
-    const title = container.getElementById(elementId);
-    const dateStr = weekend === '1' ? state.weekendDates.weekend1 : state.weekendDates.weekend2;
-    if (dateStr) {
-        const formatted = new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-        title.textContent = `Weekend du ${formatted}`;
-    } else {
-        title.textContent = `Weekend ${weekend}`;
-    }
-}
+    const homeMatches = state.matches.filter(m => m.isHome);
+    const awayMatches = state.matches.filter(m => !m.isHome);
 
-function renderPublicMatches(container, elementId, weekend) {
-    const matchesContainer = container.getElementById(elementId);
-    const matches = state.matches.filter(m => m.weekend === weekend);
+    homeMatches.forEach(m => homeContainer.appendChild(createAdminMatchCard(m)));
+    awayMatches.forEach(m => awayContainer.appendChild(createAdminMatchCard(m)));
 
-    if (matches.length === 0) {
-        matchesContainer.innerHTML = '<p class="no-matches">Aucun match programmé</p>';
-        return;
-    }
-
-    matchesContainer.innerHTML = '';
-    matches.forEach(match => {
-        const card = createPublicMatchCard(match);
-        matchesContainer.appendChild(card);
-    });
-}
-
-function createPublicMatchCard(match) {
-    const card = document.createElement('div');
-    card.className = 'match-card';
-    const date = new Date(match.date);
-    const formatted = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-
-    card.innerHTML = `
-        <div class="match-badge ${match.isHome ? 'home' : 'away'}">
-            ${match.isHome ? 'DOMICILE' : 'EXTÉRIEUR'}
-        </div>
-        <div class="match-info">
-            <div class="info-row"><span>👥</span><span>${match.category}</span></div>
-            <div class="info-row"><span>📅</span><span>${formatted}</span></div>
-            <div class="info-row"><span>🕐</span><span>${match.time}</span></div>
-            <div class="info-row"><span>📍</span><span>${match.location}</span></div>
-            <div class="match-opponent">VS ${match.opponent}</div>
-        </div>`;
-    return card;
-}
-
-function renderAdminMatches(elementId, weekend) {
-    const container = document.getElementById(elementId);
-    const matches = state.matches.filter(m => m.weekend === weekend);
-
-    if (matches.length === 0) {
-        container.innerHTML = '<p class="no-matches">Aucun match programmé</p>';
-        return;
-    }
-
-    container.innerHTML = '';
-    matches.forEach(match => container.appendChild(createAdminMatchCard(match)));
+    // Ajout des boutons d'export
+    document.getElementById('download-png').addEventListener('click', downloadPNG);
+    document.getElementById('download-xls').addEventListener('click', downloadXLS);
 }
 
 function createAdminMatchCard(match) {
     const card = document.createElement('div');
-    card.className = 'admin-match-card';
+    card.className = 'match-card';
     const date = new Date(match.date);
-    const formatted = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    const dateStr = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
     card.innerHTML = `
-        <div class="admin-match-header">
-            <span class="match-badge ${match.isHome ? 'home' : 'away'}">${match.isHome ? 'DOMICILE' : 'EXTÉRIEUR'}</span>
-            <div class="admin-match-actions">
-                <button class="btn-edit" data-id="${match.id}">✏️</button>
-                <button class="btn-delete" data-id="${match.id}">🗑️</button>
-            </div>
+        <div class="match-badge ${match.isHome ? 'home' : 'away'}">${match.isHome ? 'DOMICILE' : 'EXTÉRIEUR'}</div>
+        <div>${match.category} – ${dateStr} ${match.time}</div>
+        <div>${match.location}</div>
+        <div class="match-opponent">vs ${match.opponent}</div>
+        <div style="margin-top:0.5rem;">
+            <button class="btn-edit" onclick="editMatch(${match.id})">✏️</button>
+            <button class="btn-delete" onclick="deleteMatch(${match.id})">🗑️</button>
         </div>
-        <div class="admin-match-info">
-            <div>👥 ${match.category}</div>
-            <div>📅 ${formatted}</div>
-            <div>🕐 ${match.time}</div>
-            <div>📍 ${match.location}</div>
-            <div class="admin-match-opponent">VS ${match.opponent}</div>
-        </div>`;
-
-    card.querySelector('.btn-edit').addEventListener('click', () => handleEditMatch(match.id));
-    card.querySelector('.btn-delete').addEventListener('click', () => handleDeleteMatch(match.id));
+    `;
     return card;
 }
 
-// --------------------------
-// Gestion admin
-// --------------------------
+// =====================================
+// FORMULAIRES ADMIN
+// =====================================
+function toggleForm(id) {
+    document.getElementById('match-form').classList.add('hidden');
+    document.getElementById('dates-form').classList.add('hidden');
+    document.getElementById(id).classList.toggle('hidden');
+}
 
+async function saveWeekendFromForm() {
+    const saturday = document.getElementById('date-saturday').value;
+    const sunday = document.getElementById('date-sunday').value;
+    if (!saturday || !sunday) return alert("Remplis les deux dates du weekend.");
+    await saveWeekendDates({ saturday, sunday });
+}
+
+async function handleSubmitMatch() {
+    const category = document.getElementById('match-category').value.trim();
+    const date = document.getElementById('match-date').value;
+    const time = document.getElementById('match-time').value;
+    const opponent = document.getElementById('match-opponent').value.trim();
+    const location = document.getElementById('match-location').value.trim();
+    const type = document.getElementById('match-type').value;
+
+    if (!category || !date || !time || !opponent || !location) {
+        alert('Tous les champs doivent être remplis.');
+        return;
+    }
+
+    await saveMatch({
+        id: state.editingMatch ? state.editingMatch.id : null,
+        category,
+        date,
+        time,
+        opponent,
+        location,
+        isHome: type === 'home'
+    });
+
+    resetMatchForm();
+}
+
+function resetMatchForm() {
+    state.editingMatch = null;
+    document.getElementById('match-form').classList.add('hidden');
+}
+
+function editMatch(id) {
+    const m = state.matches.find(x => x.id === id);
+    if (!m) return;
+    state.editingMatch = m;
+    toggleForm('match-form');
+    document.getElementById('match-category').value = m.category;
+    document.getElementById('match-date').value = m.date;
+    document.getElementById('match-time').value = m.time;
+    document.getElementById('match-opponent').value = m.opponent;
+    document.getElementById('match-location').value = m.location;
+    document.getElementById('match-type').value = m.isHome ? 'home' : 'away';
+}
+
+// =====================================
+// ACCÈS ADMIN
+// =====================================
 function handleAdminAccess() {
-    const password = prompt('Mot de passe administrateur :');
-    if (password === ADMIN_PASSWORD) {
+    const pwd = prompt("Mot de passe administrateur :");
+    if (pwd === ADMIN_PASSWORD) {
         state.isAdmin = true;
         renderView();
-    } else if (password) {
-        alert('Mot de passe incorrect');
+    } else if (pwd) {
+        alert("Mot de passe incorrect.");
     }
 }
 
@@ -327,172 +336,26 @@ function handleLogout() {
     renderView();
 }
 
-function toggleForm(formId) {
-    const matchForm = document.getElementById('match-form');
-    const datesForm = document.getElementById('dates-form');
 
-    if (formId === 'match-form') {
-        matchForm.classList.toggle('hidden');
-        datesForm.classList.add('hidden');
-    } else {
-        datesForm.classList.toggle('hidden');
-        matchForm.classList.add('hidden');
-    }
+// EXPORTS PNG & XLSX
+
+async function downloadPNG() {
+    const element = document.getElementById('weekend-admin-view');
+    if (!element) return;
+    const canvas = await html2canvas(element, { backgroundColor: '#0c1e3d', scale: 2 });
+    const link = document.createElement('a');
+    link.download = 'Planning_Weekend.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
 }
 
-async function handleSubmitMatch() {
-    const weekend = document.getElementById('match-weekend').value;
-    const category = document.getElementById('match-category').value.trim();
-    const date = document.getElementById('match-date').value;
-    const time = document.getElementById('match-time').value;
-    const opponent = document.getElementById('match-opponent').value.trim();
-    const location = document.getElementById('match-location').value.trim();
-    const isHome = document.querySelector('input[name="match-type"]:checked').value === 'home';
-
-    if (!category || !date || !time || !opponent || !location) {
-        alert('Veuillez remplir tous les champs.');
-        return;
-    }
-
-    const matchData = {
-        id: state.editingMatch ? state.editingMatch.id : null,
-        weekend,
-        category,
-        date,
-        time,
-        opponent,
-        location,
-        isHome
-    };
-
-    const success = await saveMatch(matchData);
-    if (success) {
-        resetMatchForm();
-        renderView();
-    }
-}
-
-function handleCancelEdit() {
-    resetMatchForm();
-}
-
-function resetMatchForm() {
-    state.editingMatch = null;
-    document.getElementById('match-form').classList.add('hidden');
-    document.getElementById('form-title').textContent = 'Nouveau match';
-    document.getElementById('match-weekend').value = '1';
-    document.getElementById('match-category').value = '';
-    document.getElementById('match-date').value = '';
-    document.getElementById('match-time').value = '';
-    document.getElementById('match-opponent').value = '';
-    document.getElementById('match-location').value = '';
-    document.querySelector('input[name="match-type"][value="home"]').checked = true;
-    document.getElementById('cancel-match-btn').classList.add('hidden');
-    document.getElementById('submit-match-btn').textContent = 'Ajouter';
-}
-
-function handleEditMatch(id) {
-    const match = state.matches.find(m => m.id === id);
-    if (!match) return;
-
-    state.editingMatch = match;
-    document.getElementById('match-form').classList.remove('hidden');
-    document.getElementById('dates-form').classList.add('hidden');
-    document.getElementById('form-title').textContent = 'Modifier le match';
-    document.getElementById('match-weekend').value = match.weekend;
-    document.getElementById('match-category').value = match.category;
-    document.getElementById('match-date').value = match.date;
-    document.getElementById('match-time').value = match.time;
-    document.getElementById('match-opponent').value = match.opponent;
-    document.getElementById('match-location').value = match.location;
-    document.querySelector(`input[name="match-type"][value="${match.isHome ? 'home' : 'away'}"]`).checked = true;
-    document.getElementById('cancel-match-btn').classList.remove('hidden');
-    document.getElementById('submit-match-btn').textContent = 'Modifier';
-    document.getElementById('match-form').scrollIntoView({ behavior: 'smooth' });
-}
-
-async function handleDeleteMatch(id) {
-    if (confirm('Supprimer ce match ?')) {
-        const success = await deleteMatch(id);
-        if (success) renderView();
-    }
-}
-
-// ============================================
-// TÉLÉCHARGEMENT DU PLANNING EN IMAGE (PNG)
-// ============================================
-async function downloadWeekendAsImage(weekendNumber) {
-    const elementId = weekendNumber === 1 ? 'admin-weekend1-matches' : 'admin-weekend2-matches';
-    const container = document.getElementById(elementId);
-    if (!container) return alert('Aucun planning trouvé.');
-
-    const title = weekendNumber === 1 ? 'Planning_Weekend1.png' : 'Planning_Weekend2.png';
-    
-    try {
-        const canvas = await html2canvas(container, {
-            backgroundColor: '#0c1e3d',
-            scale: 2
-        });
-        const link = document.createElement('a');
-        link.download = title;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    } catch (err) {
-        console.error('Erreur export PNG :', err);
-        alert('Impossible de générer l’image du planning.');
-    }
-}
-
-// Ajoute les boutons de téléchargement en vue admin
-function renderAdminView(container) {
-    const template = document.getElementById('admin-view');
-    const clone = template.content.cloneNode(true);
-
-    clone.getElementById('logout-btn').addEventListener('click', handleLogout);
-    clone.getElementById('add-match-btn').addEventListener('click', () => toggleForm('match-form'));
-    clone.getElementById('config-dates-btn').addEventListener('click', () => toggleForm('dates-form'));
-
-    const dateWeekend1 = clone.getElementById('date-weekend1');
-    const dateWeekend2 = clone.getElementById('date-weekend2');
-    dateWeekend1.value = state.weekendDates.weekend1;
-    dateWeekend2.value = state.weekendDates.weekend2;
-
-    clone.getElementById('save-dates-btn').addEventListener('click', async () => {
-        const dates = {
-            weekend1: dateWeekend1.value,
-            weekend2: dateWeekend2.value
-        };
-        const success = await saveWeekendDates(dates);
-        if (success) renderView();
+function downloadXLS() {
+    const data = [['Catégorie', 'Date', 'Heure', 'Adversaire', 'Lieu', 'Type']];
+    state.matches.forEach(m => {
+        data.push([m.category, m.date, m.time, m.opponent, m.location, m.isHome ? 'Domicile' : 'Extérieur']);
     });
-
-    clone.getElementById('submit-match-btn').addEventListener('click', handleSubmitMatch);
-    clone.getElementById('cancel-match-btn').addEventListener('click', handleCancelEdit);
-
-    updateAdminWeekendTitle(clone, 'admin-weekend1-title', '1');
-    updateAdminWeekendTitle(clone, 'admin-weekend2-title', '2');
-
-    container.appendChild(clone);
-
-    setTimeout(() => {
-        renderAdminMatches('admin-weekend1-matches', '1');
-        renderAdminMatches('admin-weekend2-matches', '2');
-
-        // ➕ Ajout des boutons de téléchargement
-        const section1 = document.getElementById('admin-weekend1-title');
-        const section2 = document.getElementById('admin-weekend2-title');
-
-        const btn1 = document.createElement('button');
-        btn1.textContent = '⬇️ Télécharger';
-        btn1.className = 'btn-download';
-        btn1.addEventListener('click', () => downloadWeekendAsImage(1));
-
-        const btn2 = document.createElement('button');
-        btn2.textContent = '⬇️ Télécharger';
-        btn2.className = 'btn-download';
-        btn2.addEventListener('click', () => downloadWeekendAsImage(2));
-
-        section1.parentNode.appendChild(btn1);
-        section2.parentNode.appendChild(btn2);
-    }, 0);
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Planning');
+    XLSX.writeFile(wb, 'Planning_Weekend.xlsx');
 }
