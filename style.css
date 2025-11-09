@@ -1,16 +1,15 @@
 /* ================================
-   PALETTE CSV70 HANDBALL
+   COULEURS CSV70
    ================================ */
 :root {
     --bleu-fonce: #0c1e3d;
     --bleu-clair: #1e90ff;
     --jaune: #facc15;
-    --gris-clair: #f8fafc;
-    --gris-moyen: #e5e7eb;
+    --blanc: #ffffff;
 }
 
 /* ================================
-   BASE GÉNÉRALE
+   BASE
    ================================ */
 * {
     margin: 0;
@@ -20,165 +19,91 @@
 
 body {
     font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-    background-color: var(--gris-clair);
-    color: var(--bleu-fonce);
-    line-height: 1.6;
-}
-
-/* ================================
-   ÉTAT DE CHARGEMENT
-   ================================ */
-.loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    color: var(--blanc);
+    background: linear-gradient(160deg, var(--bleu-fonce) 0%, #112b5b 50%, var(--bleu-clair) 100%);
     min-height: 100vh;
-    background: white;
-    color: var(--bleu-fonce);
-}
-
-.spinner {
-    width: 45px;
-    height: 45px;
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-top-color: var(--bleu-clair);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.loading p {
-    margin-top: 1rem;
-    font-size: 1.1rem;
-}
-
-.hidden {
-    display: none !important;
 }
 
 /* ================================
-   EN-TÊTE GÉNÉRALE
+   HEADER
    ================================ */
 .header {
-    background-color: white;
-    border-bottom: 4px solid var(--bleu-clair);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
     padding: 1rem 2rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    border-bottom: 3px solid var(--jaune);
 }
 
 .header-content {
     display: flex;
     align-items: center;
-    gap: 1rem;
     justify-content: center;
+    gap: 1rem;
 }
 
 .club-logo {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     object-fit: contain;
 }
 
 .main-title {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--bleu-fonce);
-    margin-bottom: 0.25rem;
+    color: var(--jaune);
 }
 
 .subtitle {
     font-size: 1rem;
-    color: var(--bleu-clair);
-    font-weight: 500;
+    color: #bfdbfe;
 }
 
 /* ================================
-   VUE PUBLIQUE
+   CONTENU PRINCIPAL
    ================================ */
-.public-container {
-    padding: 2rem 1rem;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.weekends-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-}
-
-@media (min-width: 992px) {
-    .weekends-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+.public-container, .admin-container {
+    max-width: 1100px;
+    margin: 2rem auto;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    padding: 2rem;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .weekend-card {
-    background: white;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 0.75rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    border-top: 5px solid var(--jaune);
-    padding: 1.25rem;
-    transition: transform 0.2s ease;
-}
-
-.weekend-card:hover {
-    transform: translateY(-3px);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-left: 5px solid var(--jaune);
 }
 
 .weekend-title {
+    color: var(--jaune);
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--bleu-fonce);
-    margin-bottom: 0.75rem;
-    border-bottom: 2px solid var(--gris-moyen);
-    padding-bottom: 0.25rem;
-}
-
-.matches-container {
-    margin-top: 1rem;
-}
-
-.no-matches {
-    text-align: center;
-    color: #6b7280;
-    font-style: italic;
-    padding: 2rem 0;
-}
-
-/* -------------------------------
-   CARTES DE MATCH (PUBLIQUE)
-   ------------------------------- */
-.match-card {
-    background: #f9fafb;
-    border-left: 4px solid var(--bleu-clair);
-    border-radius: 0.5rem;
-    padding: 1rem;
     margin-bottom: 1rem;
-    transition: all 0.3s ease;
 }
 
-.match-card:hover {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px);
+.match-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .match-badge {
-    display: inline-block;
-    padding: 0.4rem 0.8rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
     border-radius: 0.25rem;
-    font-size: 0.8rem;
-    font-weight: 700;
+    display: inline-block;
     margin-bottom: 0.5rem;
 }
 
 .match-badge.home {
-    background: var(--bleu-fonce);
-    color: white;
+    background: var(--bleu-clair);
+    color: var(--blanc);
 }
 
 .match-badge.away {
@@ -187,67 +112,29 @@ body {
 }
 
 .match-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    color: var(--bleu-fonce);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    font-size: 0.9rem;
 }
 
 .match-opponent {
+    grid-column: span 2;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
     margin-top: 0.5rem;
     padding-top: 0.5rem;
-    border-top: 1px solid var(--gris-moyen);
     font-weight: bold;
-    color: var(--bleu-clair);
-}
-
-/* Bouton admin (vue publique) */
-.admin-access {
-    text-align: center;
-    margin-top: 2rem;
-}
-
-.admin-button {
-    background: var(--bleu-clair);
-    color: white;
-    border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.3s ease;
-}
-
-.admin-button:hover {
-    background: var(--bleu-fonce);
 }
 
 /* ================================
-   VUE ADMIN
+   ADMIN
    ================================ */
-.admin-container {
-    background-color: white;
-    min-height: 100vh;
-}
-
 .admin-header {
-    background-color: var(--bleu-fonce);
-    color: white;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 3px solid var(--bleu-clair);
     padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 4px solid var(--bleu-clair);
-}
-
-.admin-header-content h1 {
-    font-size: 1.75rem;
-    font-weight: bold;
-}
-
-.admin-subtitle {
-    font-size: 0.9rem;
-    color: #dbeafe;
 }
 
 .logout-button {
@@ -257,7 +144,6 @@ body {
     border-radius: 0.5rem;
     padding: 0.5rem 1rem;
     cursor: pointer;
-    font-weight: 500;
     transition: 0.3s ease;
 }
 
@@ -266,28 +152,20 @@ body {
     color: var(--bleu-fonce);
 }
 
-.admin-main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-}
-
-/* Actions principales */
 .admin-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary, .btn-secondary, .btn-download {
     border: none;
-    padding: 0.75rem 1.5rem;
+    padding: 0.6rem 1.2rem;
     border-radius: 0.5rem;
-    cursor: pointer;
     font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: 0.3s ease;
 }
 
 .btn-primary {
@@ -296,7 +174,8 @@ body {
 }
 
 .btn-primary:hover {
-    background: var(--bleu-fonce);
+    background: var(--jaune);
+    color: var(--bleu-fonce);
 }
 
 .btn-secondary {
@@ -304,164 +183,75 @@ body {
     color: var(--bleu-fonce);
 }
 
-.btn-secondary:hover {
-    background: #fcd34d;
+.btn-download {
+    background: var(--blanc);
+    color: var(--bleu-fonce);
 }
 
-/* Formulaires */
+.btn-download:hover {
+    background: var(--jaune);
+}
+
+/* ================================
+   FORMULAIRES & GRILLES
+   ================================ */
 .form-card {
-    background: #f9fafb;
-    border: 1px solid var(--gris-moyen);
-    border-radius: 0.75rem;
-    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 0.5rem;
     margin-bottom: 1.5rem;
 }
 
 .form-title {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: var(--bleu-fonce);
-    margin-bottom: 1rem;
+    color: var(--jaune);
+    margin-bottom: 0.75rem;
+    font-weight: 700;
 }
 
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-}
-
-@media (min-width: 768px) {
-    .form-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--bleu-fonce);
-    margin-bottom: 0.3rem;
-}
-
-.form-input {
-    padding: 0.6rem 1rem;
-    border: 2px solid var(--gris-moyen);
+.form-input, select {
+    width: 100%;
+    padding: 0.5rem;
     border-radius: 0.5rem;
-    font-size: 1rem;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: var(--bleu-clair);
-}
-
-/* Boutons de formulaire */
-.btn-submit {
-    background: var(--bleu-clair);
-    color: white;
-}
-
-.btn-submit:hover {
-    background: var(--bleu-fonce);
-}
-
-.btn-cancel {
-    background: #9ca3af;
-    color: white;
-}
-
-.btn-cancel:hover {
-    background: #6b7280;
-}
-
-/* Cartes admin */
-.admin-weekends-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-}
-
-@media (min-width: 992px) {
-    .admin-weekends-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+    border: 1px solid #ccc;
 }
 
 .admin-weekend-card {
-    background: white;
-    border: 1px solid var(--gris-moyen);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 0.75rem;
-    overflow: hidden;
-}
-
-.admin-weekend-header {
-    background: var(--bleu-fonce);
-    padding: 1rem;
-    color: white;
-    border-bottom: 4px solid var(--bleu-clair);
-}
-
-.admin-matches-list {
     padding: 1rem;
 }
 
-.admin-match-card {
-    background: #f9fafb;
-    border: 1px solid var(--gris-moyen);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    transition: 0.2s ease;
+.admin-weekend-header h2 {
+    color: var(--jaune);
+    font-size: 1.2rem;
 }
 
-.admin-match-card:hover {
-    border-color: var(--bleu-clair);
+.no-matches {
+    font-style: italic;
+    opacity: 0.8;
 }
 
-.admin-match-header {
+/* ================================
+   CHARGEMENT
+   ================================ */
+.loading {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
 }
 
-.admin-match-actions {
-    display: flex;
-    gap: 0.5rem;
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--jaune);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
-.btn-edit {
-    background: #dbeafe;
-    border: none;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    padding: 0.4rem;
-}
-
-.btn-edit:hover {
-    background: #bfdbfe;
-}
-
-.btn-delete {
-    background: #fee2e2;
-    border: none;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    padding: 0.4rem;
-}
-
-.btn-delete:hover {
-    background: #fecaca;
-}
-
-.admin-match-opponent {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--gris-moyen);
-    color: var(--bleu-fonce);
-    font-weight: 600;
+.loading p {
+    margin-top: 1rem;
+    font-size: 1rem;
 }

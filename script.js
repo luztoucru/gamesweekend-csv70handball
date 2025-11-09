@@ -417,3 +417,82 @@ async function handleDeleteMatch(id) {
         if (success) renderView();
     }
 }
+
+// ============================================
+// TÉLÉCHARGEMENT DU PLANNING EN IMAGE (PNG)
+// ============================================
+async function downloadWeekendAsImage(weekendNumber) {
+    const elementId = weekendNumber === 1 ? 'admin-weekend1-matches' : 'admin-weekend2-matches';
+    const container = document.getElementById(elementId);
+    if (!container) return alert('Aucun planning trouvé.');
+
+    const title = weekendNumber === 1 ? 'Planning_Weekend1.png' : 'Planning_Weekend2.png';
+    
+    try {
+        const canvas = await html2canvas(container, {
+            backgroundColor: '#0c1e3d',
+            scale: 2
+        });
+        const link = document.createElement('a');
+        link.download = title;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    } catch (err) {
+        console.error('Erreur export PNG :', err);
+        alert('Impossible de générer l’image du planning.');
+    }
+}
+
+// Ajoute les boutons de téléchargement en vue admin
+function renderAdminView(container) {
+    const template = document.getElementById('admin-view');
+    const clone = template.content.cloneNode(true);
+
+    clone.getElementById('logout-btn').addEventListener('click', handleLogout);
+    clone.getElementById('add-match-btn').addEventListener('click', () => toggleForm('match-form'));
+    clone.getElementById('config-dates-btn').addEventListener('click', () => toggleForm('dates-form'));
+
+    const dateWeekend1 = clone.getElementById('date-weekend1');
+    const dateWeekend2 = clone.getElementById('date-weekend2');
+    dateWeekend1.value = state.weekendDates.weekend1;
+    dateWeekend2.value = state.weekendDates.weekend2;
+
+    clone.getElementById('save-dates-btn').addEventListener('click', async () => {
+        const dates = {
+            weekend1: dateWeekend1.value,
+            weekend2: dateWeekend2.value
+        };
+        const success = await saveWeekendDates(dates);
+        if (success) renderView();
+    });
+
+    clone.getElementById('submit-match-btn').addEventListener('click', handleSubmitMatch);
+    clone.getElementById('cancel-match-btn').addEventListener('click', handleCancelEdit);
+
+    updateAdminWeekendTitle(clone, 'admin-weekend1-title', '1');
+    updateAdminWeekendTitle(clone, 'admin-weekend2-title', '2');
+
+    container.appendChild(clone);
+
+    setTimeout(() => {
+        renderAdminMatches('admin-weekend1-matches', '1');
+        renderAdminMatches('admin-weekend2-matches', '2');
+
+        // ➕ Ajout des boutons de téléchargement
+        const section1 = document.getElementById('admin-weekend1-title');
+        const section2 = document.getElementById('admin-weekend2-title');
+
+        const btn1 = document.createElement('button');
+        btn1.textContent = '⬇️ Télécharger';
+        btn1.className = 'btn-download';
+        btn1.addEventListener('click', () => downloadWeekendAsImage(1));
+
+        const btn2 = document.createElement('button');
+        btn2.textContent = '⬇️ Télécharger';
+        btn2.className = 'btn-download';
+        btn2.addEventListener('click', () => downloadWeekendAsImage(2));
+
+        section1.parentNode.appendChild(btn1);
+        section2.parentNode.appendChild(btn2);
+    }, 0);
+}
