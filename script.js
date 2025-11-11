@@ -276,3 +276,169 @@ function handleLogout() {
     state.isAdmin = false;
     renderView();
 }
+
+// EXPORT PNG / XLSX (compatible iPad)
+
+async function downloadPNG() {
+    const container = document.getElementById('weekend-admin-view');
+    if (!container) return;
+
+    const buttons = container.querySelectorAll('.btn-edit, .btn-delete');
+    buttons.forEach(btn => (btn.style.display = 'none'));
+
+    const sortByDateTime = (a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`);
+    const homeMatches = state.matches.filter(m => m.isHome).sort(sortByDateTime);
+    const awayMatches = state.matches.filter(m => !m.isHome).sort(sortByDateTime);
+
+    const s = new Date(state.weekendDates.saturday);
+    const d = new Date(state.weekendDates.sunday);
+    const weekendLabel = `${s.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} – ${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+
+    const wrapper = document.createElement('div');
+    wrapper.style.background = '#0c1e3d';
+    wrapper.style.color = 'white';
+    wrapper.style.fontFamily = 'Segoe UI, sans-serif';
+    wrapper.style.padding = '40px';
+    wrapper.style.width = '1600px';
+    wrapper.style.minHeight = '900px';
+    wrapper.style.borderRadius = '15px';
+    wrapper.style.textAlign = 'center';
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.alignItems = 'center';
+
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.alignItems = 'center';
+    header.style.justifyContent = 'center';
+    header.style.gap = '20px';
+    header.style.marginBottom = '25px';
+
+    const logo = document.createElement('img');
+    logo.src = 'assets/logo.png';
+    logo.alt = 'Logo CSV70 Handball';
+    logo.style.width = '85px';
+    logo.style.height = 'auto';
+    logo.style.objectFit = 'contain';
+
+    const titleBlock = document.createElement('div');
+    const title = document.createElement('h2');
+    title.textContent = 'CSV70 Handball';
+    title.style.color = '#facc15';
+    title.style.fontSize = '36px';
+    title.style.margin = '0';
+
+    const subtitle = document.createElement('p');
+    subtitle.textContent = `Planning du week-end ${weekendLabel}`;
+    subtitle.style.fontSize = '20px';
+    subtitle.style.color = '#cfe0ff';
+    subtitle.style.margin = '5px 0 0 0';
+
+    titleBlock.appendChild(title);
+    titleBlock.appendChild(subtitle);
+    header.appendChild(logo);
+    header.appendChild(titleBlock);
+    wrapper.appendChild(header);
+
+    const labelRow = document.createElement('div');
+    labelRow.style.display = 'flex';
+    labelRow.style.width = '90%';
+    labelRow.style.justifyContent = 'space-between';
+    labelRow.style.marginBottom = '10px';
+
+    const labelHome = document.createElement('h3');
+    labelHome.textContent = '🏠 Domicile';
+    labelHome.style.color = '#facc15';
+    const labelAway = document.createElement('h3');
+    labelAway.textContent = '🚌 Extérieur';
+    labelAway.style.color = '#1e90ff';
+
+    labelRow.appendChild(labelHome);
+    labelRow.appendChild(labelAway);
+    wrapper.appendChild(labelRow);
+
+    const matchesRow = document.createElement('div');
+    matchesRow.style.display = 'grid';
+    matchesRow.style.gridTemplateColumns = '1fr 1fr';
+    matchesRow.style.gap = '40px';
+    matchesRow.style.width = '90%';
+
+    const createMatchGrid = (matches, color) => {
+        const grid = document.createElement('div');
+        grid.style.display = 'grid';
+        grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        grid.style.gap = '15px';
+        grid.style.width = '100%';
+
+        matches.forEach(m => {
+            const card = document.createElement('div');
+            card.style.background = 'rgba(255,255,255,0.1)';
+            card.style.borderLeft = `5px solid ${color}`;
+            card.style.borderRadius = '8px';
+            card.style.padding = '12px';
+            card.style.textAlign = 'left';
+            card.innerHTML = `
+                <strong>${m.category}</strong><br>
+                📅 ${new Date(m.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}<br>
+                🕒 ${m.time}<br>
+                📍 ${m.location}<br>
+                ⚔️ vs ${m.opponent}
+            `;
+            grid.appendChild(card);
+        });
+        return grid;
+    };
+
+    matchesRow.appendChild(createMatchGrid(homeMatches, '#facc15'));
+    matchesRow.appendChild(createMatchGrid(awayMatches, '#1e90ff'));
+    wrapper.appendChild(matchesRow);
+
+    document.body.appendChild(wrapper);
+    const canvas = await html2canvas(wrapper, { backgroundColor: '#0c1e3d', scale: 3, useCORS: true });
+    const link = document.createElement('a');
+    link.download = `Planning_Weekend_${s.getDate()}-${d.getDate()}_${s.getMonth()+1}_${s.getFullYear()}.png`;
+    link.href = canvas.toDataURL('image/png', 1.0);
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    document.body.removeChild(wrapper);
+    buttons.forEach(btn => (btn.style.display = ''));
+}
+
+function downloadXLS() {
+    const s = new Date(state.weekendDates.saturday);
+    const d = new Date(state.weekendDates.sunday);
+    const weekendLabel = `${s.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} – ${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+    const rows = [
+        [`CSV70 Handball - Planning du week-end ${weekendLabel}`],
+        [],
+        ['Catégorie', 'Date', 'Heure', 'Adversaire', 'Lieu', 'Type']
+    ];
+
+    state.matches.forEach(m => {
+        rows.push([
+            m.category,
+            new Date(m.date).toLocaleDateString('fr-FR'),
+            m.time,
+            m.opponent,
+            m.location,
+            m.isHome ? 'Domicile' : 'Extérieur'
+        ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Planning');
+    const filename = `Planning_Weekend_${s.getDate()}-${d.getDate()}_${s.getMonth()+1}_${s.getFullYear()}.xlsx`;
+
+    const blob = XLSX.write(wb, { bookType: 'xlsx', type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
